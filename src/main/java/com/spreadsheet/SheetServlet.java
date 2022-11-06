@@ -110,7 +110,7 @@ public class SheetServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (ctx.getAttribute("queue")==null) startEvent();
         try {
             String data = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
