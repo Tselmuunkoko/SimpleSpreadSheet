@@ -41,16 +41,20 @@
     }
 </style>
 <script>
+    let current = null;
+    let query = document.getElementById('Query');
+    function inputListenerFirst() {
+        query.value = current.value;
+    }
+    function inputListenerSecond() {
+        current.value = query.value;
+    }
     function tableBuild(cells) {
         cells.forEach(c => {
             const e = document.getElementById("C" + c.id);
             e.value = c.value;
             e.nextSibling.value = c.formula;
         });
-    }
-    async function getCells() {
-        let res = await fetch('sheet-servlet').then((e) => e.json());
-        tableBuild(res);
     }
     window.onload = async (e) => {
         let source = new EventSource('sheet-servlet');
@@ -65,18 +69,17 @@
             e.value = obj.value;
             e.nextSibling.value = obj.formula;
         };
-        await getCells();
+        let res = await fetch('sheet-servlet').then((e) => e.json());
+        tableBuild(res);
     };
 
-    let current = null;
-    let query = document.getElementById('Query');
-    function inputListenerFirst() {
-        query.value = current.value;
-    }
-    function inputListenerSecond() {
-        current.value = query.value;
-    }
-    document.addEventListener('click', async e => {
+    document.addEventListener("keypress", async e => {
+        if (e.key === "Enter") {
+            document.getElementById("table").click();
+        }
+    })
+
+    document.addEventListener('click', e => {
         if(current !== null && current.nextSibling === e.target) {
             return
         }
@@ -85,10 +88,10 @@
             current.parentNode.style = "border: 1px solid black;"
             current.removeEventListener('input', inputListenerFirst);
 
-            let res = await fetch('sheet-servlet', {
+            fetch('sheet-servlet', {
                 method: 'post',
                 headers: {
-                    'Content-Type': 'text/event-stream'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     'id': current.id.substring(1, 3),
@@ -114,11 +117,6 @@
             query.value = "";
             query.removeEventListener('input', inputListenerSecond);
             current = null;
-        }
-    })
-    document.addEventListener("keypress", async e => {
-        if (e.key === "Enter") {
-            document.getElementById("table").click();
         }
     })
 </script>
